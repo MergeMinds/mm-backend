@@ -1,15 +1,11 @@
 mod config;
+mod handlers;
+mod routes;
 
 use actix_web::{
-    get, middleware::Logger, App, HttpResponse, HttpServer, Responder,
+    middleware::Logger, App, HttpServer,
 };
-
 use config::Config;
-
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
-}
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
@@ -21,10 +17,12 @@ async fn main() -> anyhow::Result<()> {
         env_logger::Env::default().default_filter_or(config.log_level),
     );
 
-    HttpServer::new(|| App::new().service(hello).wrap(Logger::default()))
-        .bind((config.addr, config.port))?
-        .run()
-        .await?;
+    HttpServer::new(|| {
+        App::new().configure(routes::routes).wrap(Logger::default())
+    })
+    .bind((config.addr, config.port))?
+    .run()
+    .await?;
 
     Ok(())
 }

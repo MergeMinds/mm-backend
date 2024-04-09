@@ -7,6 +7,15 @@ authors = ["Artemiy Granat <artemiigranat@gmail.com>"]
 [dependencies]
 actix-web = { version = "4.5.1", features = ["rustls"] }
 anyhow = "1.0.81"
+chrono = "0.4.37"
 dotenvy = "0.15.7"
 env_logger = "0.11.3"
 log = "0.4.21"
+sqlx = { version = "0.7.4", features = [
+    "postgres",
+    "chrono",
+    "runtime-tokio",
+    "tls-rustls",
+] }
+thiserror = "1.0.58"
+utoipa = "4.2.0"
