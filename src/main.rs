@@ -1,10 +1,9 @@
 mod config;
 mod handlers;
+mod models;
 mod routes;
 
-use actix_web::{
-    middleware::Logger, App, HttpServer,
-};
+use actix_web::{middleware::Logger, App, HttpServer};
 use config::Config;
 
 #[actix_web::main]

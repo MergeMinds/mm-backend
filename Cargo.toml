@@ -18,4 +18,6 @@ sqlx = { version = "0.7.4", features = [
     "tls-rustls",
 ] }
 thiserror = "1.0.58"
-utoipa = "4.2.0"
+utoipa = { version = "4", features = ["actix_extras", "chrono"] }
+utoipa-rapidoc = { version = "3", features = ["actix-web"] }
+uuid = "1.8.0"
