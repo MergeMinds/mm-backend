@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'student');
 
 CREATE TABLE users (
-    id uuid DEFAULT uuid_generate_v4(),
+    id uuid NOT NULL PRIMARY KEY,
     email varchar(128) UNIQUE NOT NULL,
     name varchar(32) NOT NULL,
     surname varchar(32) NOT NULL,

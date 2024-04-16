@@ -10,9 +10,12 @@ use utoipa::OpenApi;
         auth::register,
         auth::login,
         auth::refresh,
+        auth::logout,
     ),
     components(schemas(
             models::User,
+            models::SignUpCredentials,
+            models::SignInCredentials,
     )),
     tags(
         (name = "auth", description = "Authorization API")
@@ -30,5 +33,6 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
     )
     .service(auth::register)
     .service(auth::login)
-    .service(auth::refresh);
+    .service(auth::refresh)
+    .service(auth::logout);
 }
