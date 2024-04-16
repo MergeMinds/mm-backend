@@ -11,6 +11,7 @@ bcrypt = "0.15.1"
 chrono = "0.4.37"
 dotenvy = "0.15.7"
 env_logger = "0.11.3"
+figment = { version = "0.10.17", features = ["env"] }
 jsonwebtoken = "9.3.0"
 log = "0.4.21"
 serde = "1.0.197"

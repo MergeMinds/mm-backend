@@ -1,3 +1,5 @@
+use crate::{config::Config, db::core::PgConnection};
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("database error: {0}")]
@@ -10,3 +12,9 @@ pub enum Error {
 impl actix_web::error::ResponseError for Error {}
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+#[derive(Clone)]
+pub struct Context {
+    pub config: Config,
+    pub db: PgConnection,
+}

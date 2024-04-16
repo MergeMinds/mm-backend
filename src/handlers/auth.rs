@@ -1,7 +1,10 @@
 use crate::{
-    db::core::PgConnection,
     models::{SignInCredentials, SignUpCredentials},
-    utils::{error::Result, jwt},
+    utils::core::Context,
+    utils::{
+        core::Result,
+        jwt::{create_token, validate_token, TokenType},
+    },
 };
 
 use actix_web::{
@@ -20,7 +23,7 @@ use time::{Duration, OffsetDateTime};
 )]
 #[post("/register")]
 async fn register(
-    db: Data<PgConnection>,
+    ctx: Data<Context>,
     Json(user_data): Json<SignUpCredentials>,
 ) -> Result<HttpResponse> {
     log::trace!("Received register request");
@@ -28,7 +31,7 @@ async fn register(
     let mut user = user_data;
     user.password = bcrypt::hash(user.password, bcrypt::DEFAULT_COST)?;
 
-    db.add_user(user).await?;
+    ctx.db.add_user(user).await?;
 
     Ok(HttpResponse::Created().into())
 }
@@ -41,16 +44,26 @@ async fn register(
 )]
 #[post("/login")]
 async fn login(
-    db: Data<PgConnection>,
+    ctx: Data<Context>,
     Json(creds): Json<SignInCredentials>,
 ) -> Result<HttpResponse> {
     log::trace!("Received login request");
 
-    if let Ok(user) = db.verify_creds(creds).await {
+    if let Ok(user) = ctx.db.verify_creds(creds).await {
         log::trace!("User has been verified");
 
-        let access_token = jwt::create_token(&user.email, user.role.clone())?;
-        let refresh_token = jwt::create_token(&user.email, user.role)?;
+        let access_token = create_token(
+            &ctx.config,
+            &user.email,
+            user.role.clone(),
+            TokenType::AccessToken,
+        )?;
+        let refresh_token = create_token(
+            &ctx.config,
+            &user.email,
+            user.role,
+            TokenType::RefreshToken,
+        )?;
 
         let cookie_to_add = |name, token| {
             Cookie::build(name, token)
@@ -73,11 +86,21 @@ async fn login(
     )
 )]
 #[post("/refresh")]
-async fn refresh(req: HttpRequest) -> Result<HttpResponse> {
+async fn refresh(ctx: Data<Context>, req: HttpRequest) -> Result<HttpResponse> {
     if let Some(cookie) = req.cookie("refresh_token") {
-        let claims = jwt::validate_token(cookie.value())?;
-        let access_token = jwt::create_token(&claims.sub, claims.role.clone())?;
-        let refresh_token = jwt::create_token(&claims.sub, claims.role)?;
+        let claims = validate_token(&ctx.config, cookie.value())?;
+        let access_token = create_token(
+            &ctx.config,
+            &claims.sub,
+            claims.role.clone(),
+            TokenType::AccessToken,
+        )?;
+        let refresh_token = create_token(
+            &ctx.config,
+            &claims.sub,
+            claims.role,
+            TokenType::RefreshToken,
+        )?;
 
         let cookie_to_add = |name, token| {
             Cookie::build(name, token)

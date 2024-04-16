@@ -1,4 +1,4 @@
-use crate::utils::error::Result;
+use crate::utils::core::Result;
 
 use sqlx::postgres::PgPoolOptions;
 

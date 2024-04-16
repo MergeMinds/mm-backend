@@ -1,4 +1,4 @@
-use crate::models::UserRole;
+use crate::{config::Config, models::UserRole};
 use jsonwebtoken::{
     decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation,
 };
@@ -11,14 +11,27 @@ pub struct Claims {
     pub role: UserRole,
 }
 
+pub enum TokenType {
+    AccessToken,
+    RefreshToken,
+}
+
 pub fn create_token(
+    config: &Config,
     email: &str,
     role: UserRole,
-) -> Result<String, jsonwebtoken::errors::Error> {
+    token_type: TokenType,
+) -> jsonwebtoken::errors::Result<String> {
+    let duration = match token_type {
+        TokenType::AccessToken => {
+            chrono::Duration::minutes(config.access_token_exp_time_minutes)
+        }
+        TokenType::RefreshToken => {
+            chrono::Duration::days(config.refresh_token_exp_time_days)
+        }
+    };
     let expiration = chrono::Utc::now()
-        // TODO(granatam): get expiration time from env and set it based on
-        // token type
-        .checked_add_signed(chrono::Duration::hours(1))
+        .checked_add_signed(duration)
         .expect("valid timestamp")
         .timestamp();
 
@@ -31,17 +44,21 @@ pub fn create_token(
     encode(
         &Header::default(),
         &claims,
-        // TODO(granatam): get JWT secret from env
-        &EncodingKey::from_secret("secret".as_ref()),
+        &EncodingKey::from_secret(config.jwt_secret.as_ref()),
     )
 }
 
-pub fn validate_token(token: &str) -> jsonwebtoken::errors::Result<Claims> {
+pub fn validate_token(
+    config: &Config,
+    token: &str,
+) -> jsonwebtoken::errors::Result<Claims> {
+    let mut validation = Validation::new(Algorithm::HS256);
+    validation.leeway = 5;
+
     decode::<Claims>(
         token,
-        // TODO(granatam): get JWT secret from env
-        &DecodingKey::from_secret("secret".as_ref()),
-        &Validation::new(Algorithm::HS256),
+        &DecodingKey::from_secret(config.jwt_secret.as_ref()),
+        &validation,
     )
     .map(|data| data.claims)
 }

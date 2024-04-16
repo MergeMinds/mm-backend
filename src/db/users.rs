@@ -1,4 +1,4 @@
-use crate::{db::core::PgConnection, models, utils::error::Result};
+use crate::{db::core::PgConnection, models, utils::core::Result};
 
 use uuid::Uuid;
 
