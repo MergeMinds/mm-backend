@@ -1,4 +1,8 @@
-use crate::{db::core::PgConnection, models, utils::core::Result};
+use crate::{
+    db::core::PgConnection,
+    models,
+    utils::core::{Error, Result},
+};
 
 use uuid::Uuid;
 
@@ -44,23 +48,16 @@ impl PgConnection {
             creds.email,
         )
         .fetch_optional(&self.pool)
-        .await?;
+        .await?
+        .ok_or(Error::AuthError)?;
 
-        // FIXME(granatam): Refactor and more precise error messages
-        let user = match user {
-            Some(user) => user,
-            None => return Err(sqlx::Error::RowNotFound.into()),
-        };
-
-        let utf8_hash = match std::str::from_utf8(&user.password) {
-            Ok(utf8_hash) => utf8_hash,
-            Err(_) => return Err(sqlx::Error::RowNotFound.into()),
-        };
+        let utf8_hash = std::str::from_utf8(&user.password)
+            .map_err(|_| Error::AuthError)?;
 
         if bcrypt::verify(&creds.password, utf8_hash)? {
             Ok(user)
         } else {
-            Err(sqlx::Error::RowNotFound.into())
+            Err(Error::AuthError)
         }
     }
 }

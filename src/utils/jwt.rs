@@ -1,4 +1,5 @@
 use crate::{config::Config, models::UserRole};
+
 use jsonwebtoken::{
     decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation,
 };

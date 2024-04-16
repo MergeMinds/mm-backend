@@ -8,6 +8,8 @@ pub enum Error {
     Bcrypt(#[from] bcrypt::BcryptError),
     #[error("jwt error: {0}")]
     Jwt(#[from] jsonwebtoken::errors::Error),
+    #[error("auth error")]
+    AuthError,
 }
 impl actix_web::error::ResponseError for Error {}
 
