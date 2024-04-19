@@ -35,13 +35,13 @@ impl PgConnection {
         Ok(())
     }
 
-    pub async fn verify_creds(
+    pub async fn get_user_by_creds(
         &self,
-        creds: models::SignInCredentials,
+        creds: &models::SignInCredentials,
     ) -> Result<models::User> {
         log::trace!("Searching for user by given credentials");
 
-        let user = sqlx::query_as!(
+        sqlx::query_as!(
             models::User,
             "SELECT id, email, name, surname, patronymic, role as \"role: _\", password FROM users
              WHERE email = $1",
@@ -49,15 +49,6 @@ impl PgConnection {
         )
         .fetch_optional(&self.pool)
         .await?
-        .ok_or(Error::AuthError)?;
-
-        let utf8_hash = std::str::from_utf8(&user.password)
-            .map_err(|_| Error::AuthError)?;
-
-        if bcrypt::verify(&creds.password, utf8_hash)? {
-            Ok(user)
-        } else {
-            Err(Error::AuthError)
-        }
+        .ok_or(Error::Auth)
     }
 }

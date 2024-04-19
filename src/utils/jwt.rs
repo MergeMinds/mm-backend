@@ -49,6 +49,19 @@ pub fn create_token(
     )
 }
 
+pub fn create_tokens(
+    config: &Config,
+    email: &str,
+    role: UserRole,
+) -> jsonwebtoken::errors::Result<(String, String)> {
+    let access_token =
+        create_token(config, email, role.clone(), TokenType::AccessToken)?;
+    let refresh_token =
+        create_token(config, email, role, TokenType::RefreshToken)?;
+
+    Ok((access_token, refresh_token))
+}
+
 pub fn validate_token(
     config: &Config,
     token: &str,
