@@ -1,5 +1,3 @@
-use crate::utils::core::Result;
-
 use sqlx::postgres::PgPoolOptions;
 
 #[derive(Clone)]
@@ -8,7 +6,7 @@ pub struct PgConnection {
 }
 
 impl PgConnection {
-    pub async fn new(db_url: &str) -> Result<PgConnection> {
+    pub async fn new(db_url: &str) -> sqlx::Result<PgConnection> {
         Ok(PgConnection {
             pool: PgPoolOptions::new().connect(db_url).await?,
         })

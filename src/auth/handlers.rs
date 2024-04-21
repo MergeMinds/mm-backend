@@ -1,10 +1,10 @@
 use crate::{
-    models::{SignInCredentials, SignUpCredentials},
-    utils::core::Context,
-    utils::{
-        core::{Error, Result},
+    auth::{
         jwt::{create_tokens, validate_token},
+        Error, Result,
     },
+    context::Context,
+    models::{SignInCredentials, SignUpCredentials},
 };
 
 use actix_web::{

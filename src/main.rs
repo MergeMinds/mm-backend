@@ -1,13 +1,13 @@
+mod auth;
 mod config;
+mod context;
 mod db;
-mod handlers;
 mod models;
 mod routes;
-mod utils;
 
 use config::Config;
+use context::Context;
 use db::core::PgConnection;
-use utils::core::Context;
 
 use actix_web::{middleware::Logger, web::Data, App, HttpServer};
 use figment::{providers::Env, Figment};

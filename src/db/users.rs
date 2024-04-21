@@ -1,8 +1,4 @@
-use crate::{
-    db::core::PgConnection,
-    models,
-    utils::core::{Error, Result},
-};
+use crate::{db::core::PgConnection, models};
 
 use uuid::Uuid;
 
@@ -10,7 +6,7 @@ impl PgConnection {
     pub async fn add_user(
         &self,
         user: models::SignUpCredentials,
-    ) -> Result<()> {
+    ) -> sqlx::Result<()> {
         log::trace!("Inserting new user");
 
         let mut tx = self.pool.begin().await?;
@@ -38,7 +34,7 @@ impl PgConnection {
     pub async fn get_user_by_creds(
         &self,
         creds: &models::SignInCredentials,
-    ) -> Result<models::User> {
+    ) -> sqlx::Result<models::User> {
         log::trace!("Searching for user by given credentials");
 
         sqlx::query_as!(
@@ -46,9 +42,8 @@ impl PgConnection {
             "SELECT id, email, name, surname, patronymic, role as \"role: _\", password FROM users
              WHERE email = $1",
             creds.email,
-        )
-        .fetch_optional(&self.pool)
+        ).fetch_optional(&self.pool)
         .await?
-        .ok_or(Error::Auth)
+        .ok_or(sqlx::Error::RowNotFound)
     }
 }

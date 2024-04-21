@@ -1,4 +1,4 @@
-use crate::handlers::auth;
+use crate::auth;
 use crate::models;
 
 use actix_web::web;
@@ -7,10 +7,10 @@ use utoipa::OpenApi;
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        auth::register,
-        auth::login,
-        auth::refresh,
-        auth::logout,
+        auth::handlers::register,
+        auth::handlers::login,
+        auth::handlers::refresh,
+        auth::handlers::logout,
     ),
     components(schemas(
             models::User,
@@ -31,8 +31,8 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
         )
         .path("/docs"),
     )
-    .service(auth::register)
-    .service(auth::login)
-    .service(auth::refresh)
-    .service(auth::logout);
+    .service(auth::handlers::register)
+    .service(auth::handlers::login)
+    .service(auth::handlers::refresh)
+    .service(auth::handlers::logout);
 }

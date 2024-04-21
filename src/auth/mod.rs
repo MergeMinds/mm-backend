@@ -1,4 +1,5 @@
-use crate::{config::Config, db::core::PgConnection};
+pub mod handlers;
+mod jwt;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -14,9 +15,3 @@ pub enum Error {
 impl actix_web::error::ResponseError for Error {}
 
 pub type Result<T> = std::result::Result<T, Error>;
-
-#[derive(Clone)]
-pub struct Context {
-    pub config: Config,
-    pub db: PgConnection,
-}
