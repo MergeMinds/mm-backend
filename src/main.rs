@@ -15,7 +15,7 @@ use std::{env, sync::Arc};
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
-    dotenvy::dotenv()?;
+    _ = dotenvy::dotenv();
 
     let config: Config = Figment::from(Config::default())
         .merge(Env::prefixed("MM_"))
