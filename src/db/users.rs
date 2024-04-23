@@ -9,8 +9,6 @@ impl PgConnection {
     ) -> sqlx::Result<()> {
         log::trace!("Inserting new user");
 
-        let mut tx = self.pool.begin().await?;
-
         sqlx::query_as!(
             models::SignUpCredentials,
             "INSERT INTO users (id, email, name, surname, patronymic, role, password)
@@ -22,10 +20,8 @@ impl PgConnection {
             user.patronymic,
             user.role as models::UserRole,
             &user.password.as_bytes(),
-        ).execute(&mut *tx)
+        ).execute(&self.pool)
         .await?;
-
-        tx.commit().await?;
 
         log::trace!("Inserted new user");
         Ok(())

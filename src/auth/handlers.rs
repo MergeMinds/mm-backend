@@ -49,9 +49,8 @@ async fn login(
 ) -> Result<HttpResponse> {
     log::trace!("Received login request");
 
-    let user = match ctx.db.get_user_by_creds(&creds).await {
-        Ok(user) => user,
-        Err(_) => return Ok(HttpResponse::Unauthorized().finish()),
+    let Ok(user) = ctx.db.get_user_by_creds(&creds).await else {
+        return Ok(HttpResponse::Unauthorized().finish());
     };
 
     let utf8_hash =
@@ -84,25 +83,25 @@ async fn login(
 )]
 #[post("/refresh")]
 async fn refresh(ctx: Data<Context>, req: HttpRequest) -> Result<HttpResponse> {
-    if let Some(cookie) = req.cookie("refresh_token") {
-        let claims = validate_token(&ctx.config, cookie.value())?;
-        let (access_token, refresh_token) =
-            create_tokens(&ctx.config, &claims.sub, claims.role.clone())?;
+    let Some(cookie) = req.cookie("refresh_token") else {
+        return Ok(HttpResponse::Unauthorized().finish());
+    };
 
-        let cookie_to_add = |name, token| {
-            Cookie::build(name, token)
-                .path("/")
-                .http_only(true)
-                .finish()
-        };
+    let claims = validate_token(&ctx.config, cookie.value())?;
+    let (access_token, refresh_token) =
+        create_tokens(&ctx.config, &claims.sub, claims.role.clone())?;
 
-        Ok(HttpResponse::Ok()
-            .cookie(cookie_to_add("access_token", access_token))
-            .cookie(cookie_to_add("refresh_token", refresh_token))
-            .finish())
-    } else {
-        Ok(HttpResponse::Unauthorized().into())
-    }
+    let cookie_to_add = |name, token| {
+        Cookie::build(name, token)
+            .path("/")
+            .http_only(true)
+            .finish()
+    };
+
+    Ok(HttpResponse::Ok()
+        .cookie(cookie_to_add("access_token", access_token))
+        .cookie(cookie_to_add("refresh_token", refresh_token))
+        .finish())
 }
 
 #[utoipa::path(
