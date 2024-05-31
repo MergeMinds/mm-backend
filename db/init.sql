@@ -94,7 +94,7 @@ CREATE table admin (
 
 -- NOTE(mchernigin): probably should give names to milestones
 -- NOTE(nrydanov): This relation should be used to determine in what milestone
--- certail discipline become available for a student from some unit
+-- certain discipline become available for a student from some unit
 CREATE TABLE discipline_milestones (
     discipline_id uuid NOT NULL REFERENCES discipline(id),
     -- NOTE(nrydanov): Leaf unit, most of the time
