@@ -13,25 +13,27 @@ pub enum UserRole {
 pub struct User {
     pub id: Uuid,
     pub email: String,
+    pub username: String,
     pub name: String,
     pub surname: String,
-    pub patronymic: Option<String>,
     pub password: Vec<u8>,
-    pub role: UserRole,
+    pub date_of_birth: Option<chrono::NaiveDate>,
+    pub created_at: chrono::NaiveDateTime,
+    pub last_online: Option<chrono::NaiveDateTime>,
 }
 
 #[derive(utoipa::ToSchema, Serialize, Deserialize)]
 pub struct SignUpCredentials {
     pub email: String,
+    pub username: String,
     pub name: String,
     pub surname: String,
-    pub patronymic: Option<String>,
-    pub role: UserRole,
     pub password: String,
+    pub date_of_birth: Option<chrono::NaiveDate>,
 }
 
 #[derive(utoipa::ToSchema, Serialize, Deserialize)]
 pub struct SignInCredentials {
-    pub email: String,
+    pub login: String,
     pub password: String,
 }

@@ -62,7 +62,7 @@ async fn login(
     log::trace!("User has been verified");
 
     let (access_token, refresh_token) =
-        create_tokens(&ctx.config, &user.email, user.role.clone())?;
+        create_tokens(&ctx.config, &user.email)?;
 
     let cookie_to_add = |name, token| {
         Cookie::build(name, token)
@@ -89,7 +89,7 @@ async fn refresh(ctx: Data<Context>, req: HttpRequest) -> Result<HttpResponse> {
 
     let claims = validate_token(&ctx.config, cookie.value())?;
     let (access_token, refresh_token) =
-        create_tokens(&ctx.config, &claims.sub, claims.role.clone())?;
+        create_tokens(&ctx.config, &claims.sub)?;
 
     let cookie_to_add = |name, token| {
         Cookie::build(name, token)

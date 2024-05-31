@@ -1,4 +1,4 @@
-use crate::{config::Config, models::UserRole};
+use crate::config::Config;
 
 use jsonwebtoken::{
     decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation,
@@ -9,7 +9,6 @@ use serde::{Deserialize, Serialize};
 pub struct Claims {
     pub sub: String,
     pub exp: usize,
-    pub role: UserRole,
 }
 
 pub enum TokenType {
@@ -20,7 +19,6 @@ pub enum TokenType {
 pub fn create_token(
     config: &Config,
     email: &str,
-    role: UserRole,
     token_type: TokenType,
 ) -> jsonwebtoken::errors::Result<String> {
     let duration = match token_type {
@@ -39,7 +37,6 @@ pub fn create_token(
     let claims = Claims {
         sub: email.to_owned(),
         exp: expiration as usize,
-        role,
     };
 
     encode(
@@ -52,12 +49,9 @@ pub fn create_token(
 pub fn create_tokens(
     config: &Config,
     email: &str,
-    role: UserRole,
 ) -> jsonwebtoken::errors::Result<(String, String)> {
-    let access_token =
-        create_token(config, email, role.clone(), TokenType::AccessToken)?;
-    let refresh_token =
-        create_token(config, email, role, TokenType::RefreshToken)?;
+    let access_token = create_token(config, email, TokenType::AccessToken)?;
+    let refresh_token = create_token(config, email, TokenType::RefreshToken)?;
 
     Ok((access_token, refresh_token))
 }

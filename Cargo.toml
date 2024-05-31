@@ -8,7 +8,7 @@ authors = ["Artemiy Granat <artemiigranat@gmail.com>"]
 actix-web = { version = "4.5.1", features = ["rustls", "cookies"] }
 anyhow = "1.0.81"
 bcrypt = "0.15.1"
-chrono = "0.4.37"
+chrono = { version = "0.4.37", features = ["serde"] }
 dotenvy = "0.15.7"
 env_logger = "0.11.3"
 figment = { version = "0.10.17", features = ["env"] }
