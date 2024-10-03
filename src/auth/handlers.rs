@@ -50,6 +50,7 @@ async fn login(
     log::trace!("Received login request");
 
     let Ok(user) = ctx.db.get_user_by_creds(&creds).await else {
+        let _ = bcrypt::hash(&creds.password, bcrypt::DEFAULT_COST)?;
         return Ok(HttpResponse::Unauthorized().finish());
     };
 
