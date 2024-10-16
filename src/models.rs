@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(sqlx::Type, Clone, Serialize, Deserialize)]
+#[derive(sqlx::Type, Clone, Copy, Serialize, Deserialize)]
 #[sqlx(type_name = "user_role", rename_all = "lowercase")]
 pub enum UserRole {
     Admin,
