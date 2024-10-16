@@ -1,6 +1,9 @@
 .*
 !.env.sample
 !.gitignore
+# this is for the "offline" linter checks to work properly
+!/.sqlx/
+!/.github/
 
-/target
-db/data
+/target/
+/db/data/
