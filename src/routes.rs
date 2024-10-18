@@ -1,4 +1,5 @@
 use crate::auth;
+use crate::course;
 use crate::discipline;
 use crate::models;
 
@@ -17,6 +18,11 @@ use utoipa::OpenApi;
         discipline::handlers::create_by_id,
         discipline::handlers::update_by_id,
         discipline::handlers::delete_by_id,
+        course::handlers::get_all,
+        course::handlers::get_by_id,
+        course::handlers::create,
+        course::handlers::update_by_id,
+        course::handlers::delete_by_id,
     ),
     components(schemas(
             models::User,
@@ -24,6 +30,8 @@ use utoipa::OpenApi;
             models::SignInCredentials,
             models::Discipline,
             models::DisciplineIn,
+            models::Course,
+            models::CourseIn,
     )),
     tags(
         (name = "auth", description = "Authorization API")
@@ -47,5 +55,10 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
     .service(discipline::handlers::get_by_id)
     .service(discipline::handlers::create_by_id)
     .service(discipline::handlers::update_by_id)
-    .service(discipline::handlers::delete_by_id);
+    .service(discipline::handlers::delete_by_id)
+    .service(course::handlers::get_all)
+    .service(course::handlers::get_by_id)
+    .service(course::handlers::create)
+    .service(course::handlers::update_by_id)
+    .service(course::handlers::delete_by_id);
 }

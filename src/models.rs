@@ -48,3 +48,19 @@ pub struct Discipline {
 pub struct DisciplineIn {
     pub name: String,
 }
+
+#[derive(utoipa::ToSchema, Serialize, Deserialize)]
+pub struct Course {
+    pub id: Uuid,
+    pub discipline_id: Uuid,
+    pub owner_id: Uuid,
+    pub name: String,
+    pub created_at: chrono::NaiveDateTime,
+}
+
+#[derive(utoipa::ToSchema, Serialize, Deserialize)]
+pub struct CourseIn {
+    pub discipline_id: Uuid,
+    pub owner_id: Uuid,
+    pub name: String,
+}
