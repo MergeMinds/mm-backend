@@ -37,3 +37,14 @@ pub struct SignInCredentials {
     pub login: String,
     pub password: String,
 }
+
+#[derive(utoipa::ToSchema, Serialize, Deserialize)]
+pub struct Discipline {
+    pub id: Uuid,
+    pub name: String,
+}
+
+#[derive(utoipa::ToSchema, Serialize, Deserialize)]
+pub struct DisciplineIn {
+    pub name: String,
+}
