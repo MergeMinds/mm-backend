@@ -1,7 +1,9 @@
 mod auth;
 mod config;
 mod context;
+mod course;
 mod db;
+mod discipline;
 mod models;
 mod routes;
 
