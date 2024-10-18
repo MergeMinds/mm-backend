@@ -5,26 +5,26 @@ edition = "2021"
 authors = ["Artemiy Granat <artemiigranat@gmail.com>"]
 
 [dependencies]
-actix-web = { version = "4.5.1", features = ["rustls", "cookies"] }
-anyhow = "1.0.81"
+actix-web = { version = "4", features = ["rustls", "cookies"] }
+anyhow = "1"
 bcrypt = "0.15.1"
-chrono = { version = "0.4.37", features = ["serde"] }
-dotenvy = "0.15.7"
-env_logger = "0.11.3"
-figment = { version = "0.10.17", features = ["env"] }
-jsonwebtoken = "9.3.0"
-log = "0.4.21"
-serde = "1.0.197"
-serde_json = "1.0.115"
-sqlx = { version = "0.7.4", features = [
+chrono = { version = "0.4", features = ["serde"] }
+dotenvy = "0.15"
+env_logger = "0.11"
+figment = { version = "0.10", features = ["env"] }
+jsonwebtoken = "9"
+log = "0.4"
+serde = "1"
+serde_json = "1"
+sqlx = { version = "0.8", features = [
     "postgres",
     "chrono",
     "runtime-tokio",
     "tls-rustls",
     "uuid",
 ] }
-thiserror = "1.0.58"
-time = "0.3.36"
+thiserror = "1"
+time = "0.3"
 utoipa = { version = "4", features = ["actix_extras", "chrono"] }
 utoipa-rapidoc = { version = "3", features = ["actix-web"] }
-uuid = { version = "1.8.0", features = ["serde", "v4"] }
+uuid = { version = "1", features = ["serde", "v4"] }
