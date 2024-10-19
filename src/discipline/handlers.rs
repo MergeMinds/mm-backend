@@ -20,7 +20,7 @@ async fn get_all(ctx: Data<Context>) -> HttpResponse {
         Ok(disciplines) => HttpResponse::Ok().json(disciplines),
         Err(e) => {
             log::error!("Error: {}", e);
-            return HttpResponse::InternalServerError().finish();
+            HttpResponse::InternalServerError().finish()
         }
     }
 }
