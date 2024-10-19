@@ -15,7 +15,7 @@ use utoipa::OpenApi;
         auth::handlers::logout,
         discipline::handlers::get_all,
         discipline::handlers::get_by_id,
-        discipline::handlers::create_by_id,
+        discipline::handlers::create,
         discipline::handlers::update_by_id,
         discipline::handlers::delete_by_id,
         course::handlers::get_all,
@@ -53,7 +53,7 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
     .service(auth::handlers::logout)
     .service(discipline::handlers::get_all)
     .service(discipline::handlers::get_by_id)
-    .service(discipline::handlers::create_by_id)
+    .service(discipline::handlers::create)
     .service(discipline::handlers::update_by_id)
     .service(discipline::handlers::delete_by_id)
     .service(course::handlers::get_all)

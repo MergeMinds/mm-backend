@@ -57,7 +57,7 @@ async fn get_by_id(ctx: Data<Context>, id: Path<Uuid>) -> HttpResponse {
     )
 )]
 #[post("/disciplines")]
-async fn create_by_id(
+async fn create(
     ctx: Data<Context>,
     Json(discipline): Json<models::DisciplineIn>,
 ) -> HttpResponse {
