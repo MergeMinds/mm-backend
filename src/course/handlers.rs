@@ -88,10 +88,13 @@ async fn update_by_id(
 ) -> HttpResponse {
     match ctx.db.update_course_by_id(*id, course).await {
         Ok(course) => HttpResponse::Ok().json(course),
-        Err(e) => {
-            log::error!("{}", e);
-            HttpResponse::InternalServerError().finish()
-        }
+        Err(e) => match e {
+            sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
+            _ => {
+                log::error!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            }
+        },
     }
 }
 
