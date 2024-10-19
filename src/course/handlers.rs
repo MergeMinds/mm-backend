@@ -35,7 +35,10 @@ async fn get_by_id(ctx: Data<Context>, id: Path<Uuid>) -> HttpResponse {
         Ok(course) => HttpResponse::Ok().json(course),
         Err(e) => match e {
             sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
-            _ => HttpResponse::InternalServerError().finish(),
+            _ => {
+                log::error!("Error: {}", e);
+                HttpResponse::InternalServerError().finish()
+            }
         },
     }
 }
@@ -56,7 +59,10 @@ async fn create(
 ) -> HttpResponse {
     match ctx.db.add_course(course).await {
         Ok(course) => HttpResponse::Created().json(course),
-        Err(_) => HttpResponse::InternalServerError().finish(),
+        Err(e) => {
+            log::error!("Error: {}", e);
+            HttpResponse::InternalServerError().finish()
+        }
     }
 }
 
@@ -78,7 +84,10 @@ async fn update_by_id(
 ) -> HttpResponse {
     match ctx.db.update_course_by_id(*id, course).await {
         Ok(course) => HttpResponse::Ok().json(course),
-        Err(_) => HttpResponse::InternalServerError().finish(),
+        Err(e) => {
+            log::error!("Error: {}", e);
+            HttpResponse::InternalServerError().finish()
+        }
     }
 }
 
@@ -97,7 +106,10 @@ async fn delete_by_id(ctx: Data<Context>, id: Path<Uuid>) -> HttpResponse {
         Ok(course) => HttpResponse::Ok().json(course),
         Err(e) => match e {
             sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
-            _ => HttpResponse::InternalServerError().finish(),
+            _ => {
+                log::error!("Error: {}", e);
+                HttpResponse::InternalServerError().finish()
+            }
         },
     }
 }

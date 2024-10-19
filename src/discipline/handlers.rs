@@ -16,10 +16,13 @@ use crate::{context::Context, models};
 async fn get_all(ctx: Data<Context>) -> HttpResponse {
     log::trace!("Received get disciplines request");
 
-    let Ok(disciplines) = ctx.db.get_disciplines().await else {
-        return HttpResponse::InternalServerError().finish();
-    };
-    HttpResponse::Ok().json(disciplines)
+    match ctx.db.get_disciplines().await {
+        Ok(disciplines) => HttpResponse::Ok().json(disciplines),
+        Err(e) => {
+            log::error!("Error: {}", e);
+            return HttpResponse::InternalServerError().finish();
+        }
+    }
 }
 
 #[utoipa::path(
@@ -63,7 +66,10 @@ async fn create(
 ) -> HttpResponse {
     match ctx.db.add_discipline(&discipline.name).await {
         Ok(discipline) => HttpResponse::Created().json(discipline),
-        Err(_) => HttpResponse::InternalServerError().finish(),
+        Err(e) => {
+            log::error!("Error: {}", e);
+            HttpResponse::InternalServerError().finish()
+        }
     }
 }
 
@@ -87,7 +93,10 @@ async fn update_by_id(
         Ok(_) => HttpResponse::Ok().finish(),
         Err(e) => match e {
             sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
-            _ => HttpResponse::InternalServerError().finish(),
+            _ => {
+                log::error!("Error: {}", e);
+                HttpResponse::InternalServerError().finish()
+            }
         },
     }
 }
@@ -107,7 +116,10 @@ async fn delete_by_id(ctx: Data<Context>, id: Path<Uuid>) -> HttpResponse {
         Ok(_) => HttpResponse::Ok().finish(),
         Err(e) => match e {
             sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
-            _ => HttpResponse::InternalServerError().finish(),
+            _ => {
+                log::error!("Error: {}", e);
+                HttpResponse::InternalServerError().finish()
+            }
         },
     }
 }
