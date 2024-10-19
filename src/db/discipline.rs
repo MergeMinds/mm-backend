@@ -23,6 +23,7 @@ impl PgConnection {
         .await?;
 
         log::trace!("Inserted new discipline!");
+
         Ok(models::Discipline {
             id,
             name: name.to_string(),
@@ -35,13 +36,17 @@ impl PgConnection {
     ) -> sqlx::Result<models::Discipline> {
         log::trace!("Searching for discipline by given id");
 
-        sqlx::query_as!(
+        let result = sqlx::query_as!(
             models::Discipline,
             "SELECT * FROM discipline WHERE id = $1",
             id,
         )
         .fetch_one(&self.pool)
-        .await
+        .await;
+
+        log::trace!("Discipline found!");
+
+        result
     }
 
     pub async fn get_disciplines(
@@ -49,9 +54,14 @@ impl PgConnection {
     ) -> sqlx::Result<Vec<models::Discipline>> {
         log::trace!("Discipline getting");
 
-        sqlx::query_as!(models::Discipline, "SELECT * FROM discipline")
-            .fetch_all(&self.pool)
-            .await
+        let result =
+            sqlx::query_as!(models::Discipline, "SELECT * FROM discipline")
+                .fetch_all(&self.pool)
+                .await;
+
+        log::trace!("Discipline received");
+
+        result
     }
 
     pub async fn update_discipline_name(
@@ -70,6 +80,8 @@ impl PgConnection {
         .execute(&self.pool)
         .await?;
 
+        log::trace!("Discipline updated!");
+
         Ok(())
     }
 
@@ -83,6 +95,8 @@ impl PgConnection {
         )
         .execute(&self.pool)
         .await?;
+
+        log::trace!("Discipline deleted!");
 
         Ok(())
     }

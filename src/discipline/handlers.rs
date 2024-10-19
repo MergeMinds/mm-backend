@@ -14,12 +14,10 @@ use crate::{context::Context, models};
 )]
 #[get("/disciplines")]
 async fn get_all(ctx: Data<Context>) -> HttpResponse {
-    log::trace!("Received get disciplines request");
-
     match ctx.db.get_disciplines().await {
         Ok(disciplines) => HttpResponse::Ok().json(disciplines),
         Err(e) => {
-            log::error!("Error: {}", e);
+            log::error!("{}", e);
             HttpResponse::InternalServerError().finish()
         }
     }
@@ -36,14 +34,12 @@ async fn get_all(ctx: Data<Context>) -> HttpResponse {
 )]
 #[get("/disciplines/{id}")]
 async fn get_by_id(ctx: Data<Context>, id: Path<Uuid>) -> HttpResponse {
-    log::trace!("Received get discipline by id request");
-
     match ctx.db.get_discipline_by_id(*id).await {
         Ok(discipline) => HttpResponse::Ok().json(discipline),
         Err(e) => match e {
             sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
             _ => {
-                log::error!("Error: {}", e);
+                log::error!("{}", e);
                 HttpResponse::InternalServerError().finish()
             }
         },
@@ -67,7 +63,7 @@ async fn create(
     match ctx.db.add_discipline(&discipline.name).await {
         Ok(discipline) => HttpResponse::Created().json(discipline),
         Err(e) => {
-            log::error!("Error: {}", e);
+            log::error!("{}", e);
             HttpResponse::InternalServerError().finish()
         }
     }
@@ -94,7 +90,7 @@ async fn update_by_id(
         Err(e) => match e {
             sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
             _ => {
-                log::error!("Error: {}", e);
+                log::error!("{}", e);
                 HttpResponse::InternalServerError().finish()
             }
         },
@@ -117,7 +113,7 @@ async fn delete_by_id(ctx: Data<Context>, id: Path<Uuid>) -> HttpResponse {
         Err(e) => match e {
             sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
             _ => {
-                log::error!("Error: {}", e);
+                log::error!("{}", e);
                 HttpResponse::InternalServerError().finish()
             }
         },

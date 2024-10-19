@@ -41,21 +41,29 @@ impl PgConnection {
     ) -> sqlx::Result<models::Course> {
         log::trace!("Searching for course by given id");
 
-        sqlx::query_as!(
+        let result = sqlx::query_as!(
             models::Course,
             "SELECT * FROM course WHERE id = $1",
             id,
         )
         .fetch_one(&self.pool)
-        .await
+        .await;
+
+        log::trace!("Course found by id!");
+
+        result
     }
 
     pub async fn get_courses(&self) -> sqlx::Result<Vec<models::Course>> {
         log::trace!("Course getting");
 
-        sqlx::query_as!(models::Course, "SELECT * FROM course")
+        let result = sqlx::query_as!(models::Course, "SELECT * FROM course")
             .fetch_all(&self.pool)
-            .await
+            .await;
+
+        log::trace!("Course received!");
+
+        result
     }
 
     pub async fn update_course_by_id(
@@ -76,6 +84,8 @@ impl PgConnection {
         .execute(&self.pool)
         .await?;
 
+        log::trace!("Course updated!");
+
         Ok(())
     }
 
@@ -85,6 +95,8 @@ impl PgConnection {
         sqlx::query_as!(models::Course, "DELETE FROM course WHERE id = $1", id)
             .execute(&self.pool)
             .await?;
+
+        log::trace!("Course deleted!");
 
         Ok(())
     }

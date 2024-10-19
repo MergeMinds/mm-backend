@@ -13,6 +13,8 @@ use uuid::Uuid;
 )]
 #[get("/courses")]
 async fn get_all(ctx: Data<Context>) -> HttpResponse {
+    log::trace!("Received get courses request");
+
     let Ok(courses) = ctx.db.get_courses().await else {
         return HttpResponse::InternalServerError().finish();
     };
@@ -31,12 +33,14 @@ async fn get_all(ctx: Data<Context>) -> HttpResponse {
 )]
 #[get("/courses/{id}")]
 async fn get_by_id(ctx: Data<Context>, id: Path<Uuid>) -> HttpResponse {
+    log::trace!("Received get course by id request");
+
     match ctx.db.get_course_by_id(*id).await {
         Ok(course) => HttpResponse::Ok().json(course),
         Err(e) => match e {
             sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
             _ => {
-                log::error!("Error: {}", e);
+                log::error!("{}", e);
                 HttpResponse::InternalServerError().finish()
             }
         },
@@ -60,7 +64,7 @@ async fn create(
     match ctx.db.add_course(course).await {
         Ok(course) => HttpResponse::Created().json(course),
         Err(e) => {
-            log::error!("Error: {}", e);
+            log::error!("{}", e);
             HttpResponse::InternalServerError().finish()
         }
     }
@@ -85,7 +89,7 @@ async fn update_by_id(
     match ctx.db.update_course_by_id(*id, course).await {
         Ok(course) => HttpResponse::Ok().json(course),
         Err(e) => {
-            log::error!("Error: {}", e);
+            log::error!("{}", e);
             HttpResponse::InternalServerError().finish()
         }
     }
@@ -107,7 +111,7 @@ async fn delete_by_id(ctx: Data<Context>, id: Path<Uuid>) -> HttpResponse {
         Err(e) => match e {
             sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
             _ => {
-                log::error!("Error: {}", e);
+                log::error!("{}", e);
                 HttpResponse::InternalServerError().finish()
             }
         },
