@@ -11,7 +11,7 @@ use db::core::PgConnection;
 
 use actix_web::{middleware::Logger, web::Data, App, HttpServer};
 use figment::{providers::Env, Figment};
-use std::{env, sync::Arc};
+use std::sync::Arc;
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
@@ -25,8 +25,7 @@ async fn main() -> anyhow::Result<()> {
         env_logger::Env::default().default_filter_or(config.log_level.clone()),
     );
 
-    let db_url = env::var("DATABASE_URL")?;
-    let db = PgConnection::new(&db_url).await?;
+    let db = PgConnection::new(&config.db_url).await?;
 
     let ctx = Arc::new(Context {
         config: config.clone(),
