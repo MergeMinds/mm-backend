@@ -2,7 +2,7 @@
 name = "mm-backend"
 version = "0.1.0"
 edition = "2021"
-authors = ["Artemiy Granat <artemiigranat@gmail.com>"]
+authors = ["Artemiy Granat <artemiigranat@gmail.com>", "Nikita Rydanov <find.art.in.living@gmail.com>"]
 
 [dependencies]
 actix-web = { version = "4.5.1", features = ["rustls", "cookies"] }
@@ -12,6 +12,7 @@ chrono = { version = "0.4.37", features = ["serde"] }
 dotenvy = "0.15.7"
 env_logger = "0.11.3"
 figment = { version = "0.10.17", features = ["env"] }
+futures = "0.3.31"
 jsonwebtoken = "9.3.0"
 log = "0.4.21"
 serde = "1.0.197"
