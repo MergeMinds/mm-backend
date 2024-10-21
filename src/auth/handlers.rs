@@ -49,21 +49,21 @@ async fn login(
 
     let user = ctx.db.get_user_by_creds(&creds).await.map_err(|_| {
         let _ = bcrypt::hash(&creds.password, bcrypt::DEFAULT_COST).unwrap();
-        APIError::WrongCredentials
+        APIError::WrongCredentialsError
     })?;
 
     let utf8_hash = std::str::from_utf8(&user.password)
-        .map_err(|_| APIError::WrongCredentials)?;
+        .map_err(|_| APIError::WrongCredentialsError)?;
 
     if !bcrypt::verify(&creds.password, utf8_hash)
-        .map_err(|_| APIError::InternalServer)?
+        .map_err(|_| APIError::InternalServerError)?
     {
-        return Err(APIError::WrongCredentials);
+        return Err(APIError::WrongCredentialsError);
     }
     log::trace!("User has been verified");
 
     let (access_token, refresh_token) = create_tokens(&ctx.config, &user.email)
-        .map_err(|_| APIError::InternalServer)?;
+        .map_err(|_| APIError::InternalServerError)?;
 
     let cookie_to_add = |name, token| {
         Cookie::build(name, token)
@@ -88,14 +88,14 @@ async fn refresh(
     req: HttpRequest,
 ) -> Result<HttpResponse, APIError> {
     let Some(cookie) = req.cookie("refresh_token") else {
-        return Err(APIError::InvalidToken);
+        return Err(APIError::InvalidTokenError);
     };
 
     let claims = validate_token(&ctx.config, cookie.value())
-        .map_err(|_| APIError::InvalidToken)?;
+        .map_err(|_| APIError::InvalidTokenError)?;
 
     let (access_token, refresh_token) = create_tokens(&ctx.config, &claims.sub)
-        .map_err(|_| APIError::InternalServer)?;
+        .map_err(|_| APIError::InternalServerError)?;
 
     let cookie_to_add = |name, token| {
         Cookie::build(name, token)

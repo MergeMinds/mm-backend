@@ -4,17 +4,17 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Display, Error)]
 pub enum APIError {
-    NotFound,
-    WrongCredentials,
-    InvalidToken,
-    InternalServer,
+    NotFoundError,
+    WrongCredentialsError,
+    InvalidTokenError,
+    InternalServerError,
 }
 
 impl From<sqlx::Error> for APIError {
     fn from(value: sqlx::Error) -> Self {
         match value {
-            sqlx::Error::RowNotFound => APIError::NotFound,
-            _ => APIError::InternalServer,
+            sqlx::Error::RowNotFound => APIError::NotFoundError,
+            _ => APIError::InternalServerError,
         }
     }
 }
@@ -27,23 +27,23 @@ struct ErrorBody {
 impl ResponseError for APIError {
     fn status_code(&self) -> StatusCode {
         match self {
-            APIError::NotFound => StatusCode::NOT_FOUND,
-            APIError::WrongCredentials => StatusCode::UNAUTHORIZED,
-            APIError::InvalidToken => StatusCode::UNAUTHORIZED,
-            APIError::InternalServer => StatusCode::INTERNAL_SERVER_ERROR,
+            APIError::NotFoundError => StatusCode::NOT_FOUND,
+            APIError::WrongCredentialsError => StatusCode::UNAUTHORIZED,
+            APIError::InvalidTokenError => StatusCode::UNAUTHORIZED,
+            APIError::InternalServerError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
     fn error_response(&self) -> HttpResponse<BoxBody> {
         HttpResponse::build(self.status_code()).json(match self {
-            APIError::NotFound => ErrorBody { error: "NOT_FOUND" },
-            APIError::WrongCredentials => ErrorBody {
+            APIError::NotFoundError => ErrorBody { error: "NOT_FOUND" },
+            APIError::WrongCredentialsError => ErrorBody {
                 error: "WRONG_CREDENTIALS",
             },
-            APIError::InvalidToken => ErrorBody {
+            APIError::InvalidTokenError => ErrorBody {
                 error: "INVALID_TOKEN",
             },
-            APIError::InternalServer => ErrorBody {
+            APIError::InternalServerError => ErrorBody {
                 error: "INTERNAL_SERVER",
             },
         })
