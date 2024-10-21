@@ -4,16 +4,16 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Display, Error)]
 pub enum APIError {
-    NotFoundError,
-    WrongCredentialsError,
-    InvalidTokenError,
+    NotFound,
+    WrongCredentials,
+    InvalidToken,
     InternalServerError,
 }
 
 impl From<sqlx::Error> for APIError {
     fn from(value: sqlx::Error) -> Self {
         match value {
-            sqlx::Error::RowNotFound => APIError::NotFoundError,
+            sqlx::Error::RowNotFound => APIError::NotFound,
             _ => APIError::InternalServerError,
         }
     }
@@ -27,20 +27,20 @@ struct ErrorBody {
 impl ResponseError for APIError {
     fn status_code(&self) -> StatusCode {
         match self {
-            APIError::NotFoundError => StatusCode::NOT_FOUND,
-            APIError::WrongCredentialsError => StatusCode::UNAUTHORIZED,
-            APIError::InvalidTokenError => StatusCode::UNAUTHORIZED,
+            APIError::NotFound => StatusCode::NOT_FOUND,
+            APIError::WrongCredentials => StatusCode::UNAUTHORIZED,
+            APIError::InvalidToken => StatusCode::UNAUTHORIZED,
             APIError::InternalServerError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
     fn error_response(&self) -> HttpResponse<BoxBody> {
         HttpResponse::build(self.status_code()).json(match self {
-            APIError::NotFoundError => ErrorBody { error: "NOT_FOUND" },
-            APIError::WrongCredentialsError => ErrorBody {
+            APIError::NotFound => ErrorBody { error: "NOT_FOUND" },
+            APIError::WrongCredentials => ErrorBody {
                 error: "WRONG_CREDENTIALS",
             },
-            APIError::InvalidTokenError => ErrorBody {
+            APIError::InvalidToken => ErrorBody {
                 error: "INVALID_TOKEN",
             },
             APIError::InternalServerError => ErrorBody {

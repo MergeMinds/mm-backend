@@ -51,16 +51,16 @@ async fn login(
         // NOTE(t3m8ch): This line will never throw an error because it depends
         // on the second argument we have fixed. That's why unwrap is used here.
         let _ = bcrypt::hash(&creds.password, bcrypt::DEFAULT_COST).unwrap();
-        APIError::WrongCredentialsError
+        APIError::WrongCredentials
     })?;
 
     let utf8_hash = std::str::from_utf8(&user.password)
-        .map_err(|_| APIError::WrongCredentialsError)?;
+        .map_err(|_| APIError::WrongCredentials)?;
 
     if !bcrypt::verify(&creds.password, utf8_hash)
         .map_err(|_| APIError::InternalServerError)?
     {
-        return Err(APIError::WrongCredentialsError);
+        return Err(APIError::WrongCredentials);
     }
     log::trace!("User has been verified");
 
@@ -90,11 +90,11 @@ async fn refresh(
     req: HttpRequest,
 ) -> Result<HttpResponse, APIError> {
     let Some(cookie) = req.cookie("refresh_token") else {
-        return Err(APIError::InvalidTokenError);
+        return Err(APIError::InvalidToken);
     };
 
     let claims = validate_token(&ctx.config, cookie.value())
-        .map_err(|_| APIError::InvalidTokenError)?;
+        .map_err(|_| APIError::InvalidToken)?;
 
     let (access_token, refresh_token) = create_tokens(&ctx.config, &claims.sub)
         .map_err(|_| APIError::InternalServerError)?;
