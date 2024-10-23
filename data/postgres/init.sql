@@ -1,5 +1,4 @@
-CREATE DATABASE mm_db;
-\c mm_db;
+\c mergeminds;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -145,7 +144,7 @@ CREATE TABLE task (
 CREATE TABLE attempt (
     id uuid NOT NULL PRIMARY KEY,
     user_id uuid NOT NULL REFERENCES users(id),
-    task_id uuid NOT NULL REFERENCES task(block_id) 
+    task_id uuid NOT NULL REFERENCES task(block_id)
 );
 
 CREATE TABLE attempt_transitions (
