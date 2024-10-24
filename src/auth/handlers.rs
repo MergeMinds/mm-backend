@@ -1,9 +1,7 @@
 use crate::{
-    auth::{
-        jwt::{create_tokens, validate_token},
-        Error, Result,
-    },
+    auth::jwt::{create_tokens, validate_token},
     context::Context,
+    error::{ApiError, ApiResult},
     models::{SignInCredentials, SignUpCredentials},
 };
 
@@ -25,11 +23,13 @@ use time::OffsetDateTime;
 async fn register(
     ctx: Data<Context>,
     Json(user_data): Json<SignUpCredentials>,
-) -> Result<HttpResponse> {
+) -> ApiResult {
     log::trace!("Received register request");
 
     let mut user = user_data;
-    user.password = bcrypt::hash(user.password, bcrypt::DEFAULT_COST)?;
+    // NOTE(evgenymng): This call will never end with an error, because it can
+    // only produce one, when the cost is invalid, which we cannot possibly have.
+    user.password = bcrypt::hash(user.password, bcrypt::DEFAULT_COST).unwrap();
 
     ctx.db.add_user(user).await?;
 
@@ -46,24 +46,30 @@ async fn register(
 async fn login(
     ctx: Data<Context>,
     Json(creds): Json<SignInCredentials>,
-) -> Result<HttpResponse> {
+) -> ApiResult {
     log::trace!("Received login request");
 
-    let Ok(user) = ctx.db.get_user_by_creds(&creds).await else {
-        let _ = bcrypt::hash(&creds.password, bcrypt::DEFAULT_COST)?;
-        return Ok(HttpResponse::Unauthorized().finish());
-    };
+    let user = ctx.db.get_user_by_creds(&creds).await.map_err(|_| {
+        // NOTE(t3m8ch): This call will never end with an error, because it can only
+        // produce one, when the cost is invalid, which we cannot possibly have.
+        // NOTE(evgenymng): Masquerade as if the user exists and spend time
+        // calculating hash.
+        let _ = bcrypt::hash(&creds.password, bcrypt::DEFAULT_COST).unwrap();
+        ApiError::WrongCredentials
+    })?;
 
-    let utf8_hash =
-        std::str::from_utf8(&user.password).map_err(|_| Error::Auth)?;
+    let utf8_hash = std::str::from_utf8(&user.password)
+        .map_err(|_| ApiError::WrongCredentials)?;
 
-    if !bcrypt::verify(&creds.password, utf8_hash)? {
-        return Err(Error::Auth);
+    if !bcrypt::verify(&creds.password, utf8_hash)
+        .map_err(|_| ApiError::Internal)?
+    {
+        return Err(ApiError::WrongCredentials);
     }
     log::trace!("User has been verified");
 
-    let (access_token, refresh_token) =
-        create_tokens(&ctx.config, &user.email)?;
+    let (access_token, refresh_token) = create_tokens(&ctx.config, &user.email)
+        .map_err(|_| ApiError::Internal)?;
 
     let cookie_to_add = |name, token| {
         Cookie::build(name, token)
@@ -83,14 +89,14 @@ async fn login(
     )
 )]
 #[post("/refresh")]
-async fn refresh(ctx: Data<Context>, req: HttpRequest) -> Result<HttpResponse> {
-    let Some(cookie) = req.cookie("refresh_token") else {
-        return Ok(HttpResponse::Unauthorized().finish());
-    };
+async fn refresh(ctx: Data<Context>, req: HttpRequest) -> ApiResult {
+    let cookie = req.cookie("refresh_token").ok_or(ApiError::InvalidToken)?;
 
-    let claims = validate_token(&ctx.config, cookie.value())?;
-    let (access_token, refresh_token) =
-        create_tokens(&ctx.config, &claims.sub)?;
+    let claims = validate_token(&ctx.config, cookie.value())
+        .map_err(|_| ApiError::InvalidToken)?;
+
+    let (access_token, refresh_token) = create_tokens(&ctx.config, &claims.sub)
+        .map_err(|_| ApiError::Internal)?;
 
     let cookie_to_add = |name, token| {
         Cookie::build(name, token)
@@ -111,7 +117,7 @@ async fn refresh(ctx: Data<Context>, req: HttpRequest) -> Result<HttpResponse> {
     )
 )]
 #[post("/logout")]
-async fn logout() -> Result<HttpResponse> {
+async fn logout() -> ApiResult {
     // NOTE(granatam): We cannot delete cookies, so we explicitly set its
     // expiration time to the elapsed time
     let cookie_to_delete = |name| {
