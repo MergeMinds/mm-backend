@@ -10,6 +10,8 @@ pub enum APIError {
     InternalServerError,
 }
 
+pub type APIResult = Result<HttpResponse, APIError>;
+
 impl From<sqlx::Error> for APIError {
     fn from(value: sqlx::Error) -> Self {
         match value {

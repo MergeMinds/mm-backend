@@ -1,7 +1,7 @@
 use crate::{
     auth::jwt::{create_tokens, validate_token},
     context::Context,
-    errors::APIError,
+    errors::{APIError, APIResult},
     models::{SignInCredentials, SignUpCredentials},
 };
 
@@ -23,7 +23,7 @@ use time::OffsetDateTime;
 async fn register(
     ctx: Data<Context>,
     Json(user_data): Json<SignUpCredentials>,
-) -> Result<HttpResponse, APIError> {
+) -> APIResult {
     log::trace!("Received register request");
 
     let mut user = user_data;
@@ -44,7 +44,7 @@ async fn register(
 async fn login(
     ctx: Data<Context>,
     Json(creds): Json<SignInCredentials>,
-) -> Result<HttpResponse, APIError> {
+) -> APIResult {
     log::trace!("Received login request");
 
     let user = ctx.db.get_user_by_creds(&creds).await.map_err(|_| {
@@ -85,10 +85,7 @@ async fn login(
     )
 )]
 #[post("/refresh")]
-async fn refresh(
-    ctx: Data<Context>,
-    req: HttpRequest,
-) -> Result<HttpResponse, APIError> {
+async fn refresh(ctx: Data<Context>, req: HttpRequest) -> APIResult {
     let Some(cookie) = req.cookie("refresh_token") else {
         return Err(APIError::InvalidToken);
     };
@@ -118,7 +115,7 @@ async fn refresh(
     )
 )]
 #[post("/logout")]
-async fn logout() -> Result<HttpResponse, APIError> {
+async fn logout() -> APIResult {
     // NOTE(granatam): We cannot delete cookies, so we explicitly set its
     // expiration time to the elapsed time
     let cookie_to_delete = |name| {
