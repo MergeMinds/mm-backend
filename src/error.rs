@@ -10,7 +10,7 @@ use serde::Serialize;
 pub enum ApiError {
     #[display("wrong_credentials")]
     WrongCredentials,
-    #[display("invlid_token")]
+    #[display("invalid_token")]
     InvalidToken,
     #[display("internal")]
     Internal,
