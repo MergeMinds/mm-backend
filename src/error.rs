@@ -23,7 +23,7 @@ impl From<sqlx::Error> for ApiError {
 
 #[derive(Serialize, Deserialize)]
 struct ErrorBody {
-    pub error: &'static str,
+    pub error: String,
 }
 
 impl ResponseError for ApiError {
@@ -37,17 +37,8 @@ impl ResponseError for ApiError {
     }
 
     fn error_response(&self) -> HttpResponse<BoxBody> {
-        HttpResponse::build(self.status_code()).json(match self {
-            ApiError::NotFound => ErrorBody { error: "NOT_FOUND" },
-            ApiError::WrongCredentials => ErrorBody {
-                error: "WRONG_CREDENTIALS",
-            },
-            ApiError::InvalidToken => ErrorBody {
-                error: "INVALID_TOKEN",
-            },
-            ApiError::InternalServerError => ErrorBody {
-                error: "INTERNAL_SERVER",
-            },
+        HttpResponse::build(self.status_code()).json(ErrorBody {
+            error: format!("{}", self),
         })
     }
 }
