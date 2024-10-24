@@ -3,20 +3,20 @@ use derive_more::{Display, Error};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Display, Error)]
-pub enum APIError {
+pub enum ApiError {
     NotFound,
     WrongCredentials,
     InvalidToken,
     InternalServerError,
 }
 
-pub type APIResult = Result<HttpResponse, APIError>;
+pub type ApiResult = Result<HttpResponse, ApiError>;
 
-impl From<sqlx::Error> for APIError {
+impl From<sqlx::Error> for ApiError {
     fn from(value: sqlx::Error) -> Self {
         match value {
-            sqlx::Error::RowNotFound => APIError::NotFound,
-            _ => APIError::InternalServerError,
+            sqlx::Error::RowNotFound => ApiError::NotFound,
+            _ => ApiError::InternalServerError,
         }
     }
 }
@@ -26,26 +26,26 @@ struct ErrorBody {
     pub error: &'static str,
 }
 
-impl ResponseError for APIError {
+impl ResponseError for ApiError {
     fn status_code(&self) -> StatusCode {
         match self {
-            APIError::NotFound => StatusCode::NOT_FOUND,
-            APIError::WrongCredentials => StatusCode::UNAUTHORIZED,
-            APIError::InvalidToken => StatusCode::UNAUTHORIZED,
-            APIError::InternalServerError => StatusCode::INTERNAL_SERVER_ERROR,
+            ApiError::NotFound => StatusCode::NOT_FOUND,
+            ApiError::WrongCredentials => StatusCode::UNAUTHORIZED,
+            ApiError::InvalidToken => StatusCode::UNAUTHORIZED,
+            ApiError::InternalServerError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
     fn error_response(&self) -> HttpResponse<BoxBody> {
         HttpResponse::build(self.status_code()).json(match self {
-            APIError::NotFound => ErrorBody { error: "NOT_FOUND" },
-            APIError::WrongCredentials => ErrorBody {
+            ApiError::NotFound => ErrorBody { error: "NOT_FOUND" },
+            ApiError::WrongCredentials => ErrorBody {
                 error: "WRONG_CREDENTIALS",
             },
-            APIError::InvalidToken => ErrorBody {
+            ApiError::InvalidToken => ErrorBody {
                 error: "INVALID_TOKEN",
             },
-            APIError::InternalServerError => ErrorBody {
+            ApiError::InternalServerError => ErrorBody {
                 error: "INTERNAL_SERVER",
             },
         })

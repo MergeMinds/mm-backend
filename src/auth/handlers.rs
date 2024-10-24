@@ -1,7 +1,7 @@
 use crate::{
     auth::jwt::{create_tokens, validate_token},
     context::Context,
-    errors::{APIError, APIResult},
+    error::{ApiError, ApiResult},
     models::{SignInCredentials, SignUpCredentials},
 };
 
@@ -23,7 +23,7 @@ use time::OffsetDateTime;
 async fn register(
     ctx: Data<Context>,
     Json(user_data): Json<SignUpCredentials>,
-) -> APIResult {
+) -> ApiResult {
     log::trace!("Received register request");
 
     let mut user = user_data;
@@ -44,28 +44,28 @@ async fn register(
 async fn login(
     ctx: Data<Context>,
     Json(creds): Json<SignInCredentials>,
-) -> APIResult {
+) -> ApiResult {
     log::trace!("Received login request");
 
     let user = ctx.db.get_user_by_creds(&creds).await.map_err(|_| {
         // NOTE(t3m8ch): This line will never throw an error because it depends
         // on the second argument we have fixed. That's why unwrap is used here.
         let _ = bcrypt::hash(&creds.password, bcrypt::DEFAULT_COST).unwrap();
-        APIError::WrongCredentials
+        ApiError::WrongCredentials
     })?;
 
     let utf8_hash = std::str::from_utf8(&user.password)
-        .map_err(|_| APIError::WrongCredentials)?;
+        .map_err(|_| ApiError::WrongCredentials)?;
 
     if !bcrypt::verify(&creds.password, utf8_hash)
-        .map_err(|_| APIError::InternalServerError)?
+        .map_err(|_| ApiError::InternalServerError)?
     {
-        return Err(APIError::WrongCredentials);
+        return Err(ApiError::WrongCredentials);
     }
     log::trace!("User has been verified");
 
     let (access_token, refresh_token) = create_tokens(&ctx.config, &user.email)
-        .map_err(|_| APIError::InternalServerError)?;
+        .map_err(|_| ApiError::InternalServerError)?;
 
     let cookie_to_add = |name, token| {
         Cookie::build(name, token)
@@ -85,14 +85,14 @@ async fn login(
     )
 )]
 #[post("/refresh")]
-async fn refresh(ctx: Data<Context>, req: HttpRequest) -> APIResult {
-    let cookie = req.cookie("refresh_token").ok_or(APIError::InvalidToken)?;
+async fn refresh(ctx: Data<Context>, req: HttpRequest) -> ApiResult {
+    let cookie = req.cookie("refresh_token").ok_or(ApiError::InvalidToken)?;
 
     let claims = validate_token(&ctx.config, cookie.value())
-        .map_err(|_| APIError::InvalidToken)?;
+        .map_err(|_| ApiError::InvalidToken)?;
 
     let (access_token, refresh_token) = create_tokens(&ctx.config, &claims.sub)
-        .map_err(|_| APIError::InternalServerError)?;
+        .map_err(|_| ApiError::InternalServerError)?;
 
     let cookie_to_add = |name, token| {
         Cookie::build(name, token)
@@ -113,7 +113,7 @@ async fn refresh(ctx: Data<Context>, req: HttpRequest) -> APIResult {
     )
 )]
 #[post("/logout")]
-async fn logout() -> APIResult {
+async fn logout() -> ApiResult {
     // NOTE(granatam): We cannot delete cookies, so we explicitly set its
     // expiration time to the elapsed time
     let cookie_to_delete = |name| {
