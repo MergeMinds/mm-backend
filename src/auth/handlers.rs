@@ -48,8 +48,8 @@ async fn login(
     log::trace!("Received login request");
 
     let user = ctx.db.get_user_by_creds(&creds).await.map_err(|_| {
-        // NOTE(t3m8ch): This line will never throw an error because it depends
-        // on the second argument we have fixed. That's why unwrap is used here.
+        // NOTE(t3m8ch): This call will never end with an error, because it can only
+        // produce one, when the cost is invalid, which we cannot possibly have.
         let _ = bcrypt::hash(&creds.password, bcrypt::DEFAULT_COST).unwrap();
         ApiError::WrongCredentials
     })?;
