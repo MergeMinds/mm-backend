@@ -86,9 +86,7 @@ async fn login(
 )]
 #[post("/refresh")]
 async fn refresh(ctx: Data<Context>, req: HttpRequest) -> APIResult {
-    let Some(cookie) = req.cookie("refresh_token") else {
-        return Err(APIError::InvalidToken);
-    };
+    let cookie = req.cookie("refresh_token").ok_or(APIError::InvalidToken)?;
 
     let claims = validate_token(&ctx.config, cookie.value())
         .map_err(|_| APIError::InvalidToken)?;
