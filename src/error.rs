@@ -1,44 +1,49 @@
-use actix_web::{body::BoxBody, http::StatusCode, HttpResponse, ResponseError};
+use actix_web::{http::StatusCode, HttpResponse, ResponseError};
 use derive_more::{Display, Error};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
-#[derive(Debug, Display, Error)]
+/// Represents the complete set of error codes the API may produce.
+#[derive(Serialize, Clone, Debug, Display, Error)]
+// NOTE(evgenymng): Intentionally not making it `Copy`, because we
+// will probably need to store some additional information in those variants
+// in the future.
 pub enum ApiError {
-    NotFound,
+    #[display("wrong_credentials")]
     WrongCredentials,
+    #[display("invlid_token")]
     InvalidToken,
-    InternalServerError,
+    #[display("internal")]
+    Internal,
 }
 
+/// A convenient alias for the API handler's return type.
 pub type ApiResult = Result<HttpResponse, ApiError>;
 
 impl From<sqlx::Error> for ApiError {
-    fn from(value: sqlx::Error) -> Self {
-        match value {
-            sqlx::Error::RowNotFound => ApiError::NotFound,
-            _ => ApiError::InternalServerError,
-        }
+    fn from(_: sqlx::Error) -> Self {
+        ApiError::Internal
     }
 }
 
-#[derive(Serialize, Deserialize)]
+/// Structured error's body. If the API call fails with an error,
+/// an object with this structure is sent as a response.
+#[derive(Serialize)]
 struct ErrorBody {
-    pub error: String,
+    pub error: ApiError,
 }
 
 impl ResponseError for ApiError {
     fn status_code(&self) -> StatusCode {
         match self {
-            ApiError::NotFound => StatusCode::NOT_FOUND,
             ApiError::WrongCredentials => StatusCode::UNAUTHORIZED,
             ApiError::InvalidToken => StatusCode::UNAUTHORIZED,
-            ApiError::InternalServerError => StatusCode::INTERNAL_SERVER_ERROR,
+            ApiError::Internal => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
-    fn error_response(&self) -> HttpResponse<BoxBody> {
+    fn error_response(&self) -> HttpResponse {
         HttpResponse::build(self.status_code()).json(ErrorBody {
-            error: format!("{}", self),
+            error: self.clone(),
         })
     }
 }

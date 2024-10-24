@@ -27,6 +27,8 @@ async fn register(
     log::trace!("Received register request");
 
     let mut user = user_data;
+    // NOTE(evgenymng): This call will never end with an error, because it can
+    // only produce one, when the cost is invalid, which we cannot possibly have.
     user.password = bcrypt::hash(user.password, bcrypt::DEFAULT_COST).unwrap();
 
     ctx.db.add_user(user).await?;
@@ -50,6 +52,8 @@ async fn login(
     let user = ctx.db.get_user_by_creds(&creds).await.map_err(|_| {
         // NOTE(t3m8ch): This call will never end with an error, because it can only
         // produce one, when the cost is invalid, which we cannot possibly have.
+        // NOTE(evgenymng): Masquerade as if the user exists and spend time
+        // calculating hash.
         let _ = bcrypt::hash(&creds.password, bcrypt::DEFAULT_COST).unwrap();
         ApiError::WrongCredentials
     })?;
@@ -58,14 +62,14 @@ async fn login(
         .map_err(|_| ApiError::WrongCredentials)?;
 
     if !bcrypt::verify(&creds.password, utf8_hash)
-        .map_err(|_| ApiError::InternalServerError)?
+        .map_err(|_| ApiError::Internal)?
     {
         return Err(ApiError::WrongCredentials);
     }
     log::trace!("User has been verified");
 
     let (access_token, refresh_token) = create_tokens(&ctx.config, &user.email)
-        .map_err(|_| ApiError::InternalServerError)?;
+        .map_err(|_| ApiError::Internal)?;
 
     let cookie_to_add = |name, token| {
         Cookie::build(name, token)
@@ -92,7 +96,7 @@ async fn refresh(ctx: Data<Context>, req: HttpRequest) -> ApiResult {
         .map_err(|_| ApiError::InvalidToken)?;
 
     let (access_token, refresh_token) = create_tokens(&ctx.config, &claims.sub)
-        .map_err(|_| ApiError::InternalServerError)?;
+        .map_err(|_| ApiError::Internal)?;
 
     let cookie_to_add = |name, token| {
         Cookie::build(name, token)
