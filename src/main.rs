@@ -2,6 +2,7 @@ mod auth;
 mod config;
 mod context;
 mod db;
+mod error;
 mod models;
 mod routes;
 
