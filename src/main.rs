@@ -5,9 +5,9 @@ mod db;
 mod models;
 mod routes;
 
+use db::core::PgConnection;
 use config::Config;
 use context::Context;
-use db::core::PgConnection;
 
 use actix_web::{middleware::Logger, web::Data, App, HttpServer};
 use figment::{providers::Env, Figment};
