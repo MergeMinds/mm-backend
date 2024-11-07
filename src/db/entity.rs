@@ -1,4 +1,3 @@
-
 /// Trait for database entities.
 pub(crate) trait Entity {
     fn table_name() -> &'static str;
