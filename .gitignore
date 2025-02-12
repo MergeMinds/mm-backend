@@ -5,5 +5,5 @@
 !/.sqlx/
 !/.github/
 
-/target/
-/db/data/
+/target
+/data/postgres/data

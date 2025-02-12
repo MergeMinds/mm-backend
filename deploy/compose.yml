@@ -1,0 +1,39 @@
+name: mergeminds
+services:
+  postgres:
+    container_name: ${COMPOSE_PROJECT_NAME}-postgres
+    image: postgres:16.0
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=${MM_POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_USER=${MM_POSTGRES_USER:-postgres}
+      - POSTGRES_DB=${MM_POSTGRES_DB:-mergeminds}
+    volumes:
+      - ../data/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../data/postgres/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: "pg_isready --username=$$POSTGRES_USER && psql --username=$$POSTGRES_USER --list"
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  backend:
+    container_name: ${COMPOSE_PROJECT_NAME}-backend
+    image: ${COMPOSE_PROJECT_NAME}-backend:latest
+    build:
+      context: ..
+      dockerfile: deploy/backend.Dockerfile
+    restart: always
+    pull_policy: never
+    environment:
+      - MM_ADDR=${MM_ADDR:-0.0.0.0}
+      - MM_PORT=${MM_PORT:-8000}
+      - MM_LOG_LEVEL=${MM_LOG_LEVEL:-info}
+      - MM_JWT_SECRET=${MM_JWT_SECRET:-secret}
+      - MM_ACCESS_TOKEN_EXP_TIME_MINUTES=${MM_ACCESS_TOKEN_EXP_TIME_MINUTES:-30}
+      - MM_REFRESH_TOKEN_EXP_TIME_DAYS=${MM_REFRESH_TOKEN_EXP_TIME_DAYS:-30}
+    ports:
+      - "8000:8000"

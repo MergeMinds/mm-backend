@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Config {
+    pub db_url: String,
     pub addr: String,
     pub port: u16,
     pub log_level: String,
@@ -17,6 +18,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
+            db_url: "postgres://postgres:postgres@mergeminds-postgres:5432/mergeminds".to_string(),
             addr: "0.0.0.0".to_string(),
             port: 8000,
             log_level: "info".to_string(),
